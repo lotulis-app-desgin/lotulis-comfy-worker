@@ -16,9 +16,17 @@ FROM runpod/worker-comfyui:5.10.0-base
 RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Custom node packs, by their Comfy Registry ids. The helper also installs each
-# pack's requirements.txt.
-RUN comfy-node-install comfyui-rmbg comfyui-inpaint-cropandstitch
+# Custom node packs, by their Comfy Registry ids.
+#
+# Gotcha (worker-comfyui issue #237): comfy-node-install puts each pack's pip
+# requirements into /comfyui/.venv, but the worker launches ComfyUI from
+# /opt/venv, so the packs fail to import at boot and every node is "missing".
+# Install the requirements into /opt/venv ourselves, the same way the base
+# image does for its own pre-installed packs.
+RUN comfy-node-install comfyui-rmbg comfyui-inpaint-cropandstitch \
+    && for r in /comfyui/custom_nodes/*/requirements.txt; do \
+         [ -f "$r" ] && uv pip install --python /opt/venv/bin/python -r "$r" || true; \
+       done
 
 # Segmentation weights, in the folders ComfyUI-RMBG's SegmentV2 node reads from
 # (models/grounding-dino and models/SAM under the ComfyUI install).
