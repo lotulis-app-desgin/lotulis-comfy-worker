@@ -37,5 +37,9 @@ RUN comfy model download --url https://huggingface.co/1038lab/GroundingDINO/reso
     && comfy model download --url https://huggingface.co/1038lab/sam/resolve/main/sam_hq_vit_h.pth \
         --relative-path models/SAM --filename sam_hq_vit_h.pth
 
+# LaMa inpainting weights for ComfyUI-RMBG's AILab_LamaRemover (object removal without ghosts).
+RUN comfy model download --url https://huggingface.co/1038lab/Lama/resolve/main/big-lama.pt \
+        --relative-path models/RMBG/Lama --filename big-lama.pt
+
 # Quieter logs than the base image's DEBUG default.
 ENV COMFY_LOG_LEVEL=INFO
